@@ -34,7 +34,7 @@ actor Database {
                 .path
 
             database = try Connection(dbPath)
-            guard let database = database else { return }
+            guard database != nil else { return }
 
             createPhotosTable()
         } catch {
@@ -206,6 +206,6 @@ actor Database {
 }
 
 public struct PhotoMetadata: Sendable {
-    let fileName: String
-    let date: Date
+    public let fileName: String
+    public let date: Date
 }
