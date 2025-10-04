@@ -65,7 +65,12 @@ public class Camera : NSObject {
         
         if let videoPreviewLayer = videoPreviewLayer {
             view.layer.addSublayer(videoPreviewLayer)
-            self.captureSession.startRunning()
+            
+            let session = self.captureSession
+            
+            DispatchQueue.global(qos: .background).async {
+                session.startRunning()
+            }
         }
         
     }
@@ -79,7 +84,7 @@ public class Camera : NSObject {
 extension Camera: AVCapturePhotoCaptureDelegate {
     
     public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: (any Error)?) {
-        guard let imageData = photo.fileDataRepresentation() else { return }
+        guard let imageData = photo.fileDataRepresentation() else { print("No photo"); return }
         self.delegate?.didCapturePhoto(data: imageData)
     }
 }
