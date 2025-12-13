@@ -48,6 +48,25 @@ public class MediaCapture {
         return PhotoFileManager.fetchFile(fileName: fileName)
     }
     
+    public static func deleteTodaysPhoto() async {
+        await Database.shared.bootUp()
+        await Database.shared.deletePhotos(startDate: Date(), endDate: Date())
+    }
+    
+    public static func deleteThisWeeksPhotos() async {
+        await Database.shared.bootUp()
+        if let range = Date.currentWeekRange() {
+            await Database.shared.deletePhotos(startDate: range.start, endDate: range.end)
+        }
+    }
+    
+    public static func deleteThisMonthsPhotos() async {
+        await Database.shared.bootUp()
+        if let range = Date.currentMonthRange() {
+            await Database.shared.deletePhotos(startDate: range.start, endDate: range.end)
+        }
+    }
+    
     public static func deleteAllPhotos() async {
         await Database.shared.bootUp()
         await Database.shared.deleteAllPhotos()
@@ -55,5 +74,34 @@ public class MediaCapture {
     }
     
     // TODO: Smart Delete Images
+}
+
+extension Date {
+    
+    static func currentWeekRange() -> (start: Date, end: Date)? {
+        let calendar = Calendar.current
+        guard let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: Date())?.start,
+              let endOfWeek = calendar.date(byAdding: .day, value: 6, to: startOfWeek)
+        else { return nil }
+        
+        return (start: calendar.startOfDay(for: startOfWeek),
+                end: calendar.startOfDay(for: endOfWeek))
+    }
+    
+    static func currentMonthRange() -> (start: Date, end: Date)? {
+        let calendar = Calendar.current
+        
+        guard let startOfMonth = calendar.dateInterval(of: .month, for: Date())?.start,
+              let range = calendar.range(of: .day, in: .month, for: Date())
+        else {
+            return nil
+        }
+        
+        let lastDay = range.count - 1
+        guard let endOfMonth = calendar.date(byAdding: .day, value: lastDay, to: startOfMonth) else { return nil }
+        
+        return (start: calendar.startOfDay(for: startOfMonth),
+                end: calendar.startOfDay(for: endOfMonth))
+    }
     
 }
